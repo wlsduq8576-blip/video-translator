@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { execFile } from 'child_process';
+import { execFile, execSync } from 'child_process';
 import ffmpegStaticPath from 'ffmpeg-static';
 
 function getFfmpegPath(): string {
@@ -16,6 +16,14 @@ function getFfmpegPath(): string {
   
   if (ffmpegStaticPath && fs.existsSync(ffmpegStaticPath)) {
     return ffmpegStaticPath;
+  }
+
+  // Fallback: Check if ffmpeg is available in the system PATH (e.g. Docker environment)
+  try {
+    execSync('ffmpeg -version', { stdio: 'ignore' });
+    return 'ffmpeg';
+  } catch {
+    // ignore
   }
   
   throw new Error('FFmpeg binary was not found inside ffmpeg-static package.');

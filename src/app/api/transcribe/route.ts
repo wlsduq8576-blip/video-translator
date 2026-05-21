@@ -21,6 +21,8 @@ export async function POST(req: NextRequest) {
     fs.mkdirSync(tempDir, { recursive: true });
   }
 
+  const tempFilesToDelete: string[] = [];
+
   try {
     const formData = await req.formData();
     const apiKey = formData.get('apiKey') as string;
@@ -34,16 +36,8 @@ export async function POST(req: NextRequest) {
     let audioPath = '';
     let videoUrl = ''; 
     let mediaType: 'youtube' | 'instagram' | 'local' = 'local';
-    const tempFilesToDelete: string[] = [];
 
     if (url) {
-      const isVercel = !!process.env.VERCEL;
-      if (isVercel) {
-        return NextResponse.json({ 
-          error: 'Vercel 환경에서는 유튜브/인스타그램 링크 다운로드가 지원되지 않습니다. 컴퓨터에 있는 영상/음성 파일을 직접 업로드해 주세요.' 
-        }, { status: 400 });
-      }
-
       const ytId = getYouTubeId(url);
       if (ytId) {
         mediaType = 'youtube';
@@ -58,6 +52,7 @@ export async function POST(req: NextRequest) {
         const ytDlpPath = await ensureYtDlp();
         const outputVideoName = `ig_${Date.now()}.mp4`;
         const videoFile = path.join(tempDir, outputVideoName);
+        tempFilesToDelete.push(videoFile); // Ensure the raw video file gets deleted
         
         await new Promise<void>((resolve, reject) => {
           const args = [
@@ -87,6 +82,7 @@ export async function POST(req: NextRequest) {
           if (files.length > 0) {
             files.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
             audioPath = await extractAudio(files[0], tempDir);
+            tempFilesToDelete.push(files[0]); // Ensure the fallback video file is cleaned up too
             const videoFileName = path.basename(files[0]);
             videoUrl = `/api/video?id=${encodeURIComponent(videoFileName)}`;
           } else {
@@ -112,21 +108,14 @@ export async function POST(req: NextRequest) {
       fs.writeFileSync(tempInputPath, buffer);
       tempFilesToDelete.push(tempInputPath);
 
-      // On Vercel, bypass ffmpeg extraction and send the file directly to Gemini
-      const isVercel = !!process.env.VERCEL;
-      if (isVercel) {
-        console.log('Running on Vercel environment: Bypassing ffmpeg extraction.');
-        audioPath = tempInputPath;
-      } else {
-        try {
-          audioPath = await extractAudio(tempInputPath, tempDir);
-          if (audioPath !== tempInputPath) {
-            tempFilesToDelete.push(audioPath);
-          }
-        } catch (e) {
-          console.warn('ffmpeg extraction failed, falling back to direct upload:', e);
-          audioPath = tempInputPath;
+      try {
+        audioPath = await extractAudio(tempInputPath, tempDir);
+        if (audioPath !== tempInputPath) {
+          tempFilesToDelete.push(audioPath);
         }
+      } catch (e) {
+        console.warn('ffmpeg extraction failed, falling back to direct upload:', e);
+        audioPath = tempInputPath;
       }
     } else {
       return NextResponse.json({ error: 'No media URL or file provided.' }, { status: 400 });
@@ -160,17 +149,6 @@ export async function POST(req: NextRequest) {
     console.log(`Running Gemini transcription on: ${audioPath} with mimeType: ${mimeType}`);
     const scriptSegments = await transcribeAndTranslate(apiKey, audioPath, mimeType);
 
-    for (const f of tempFilesToDelete) {
-      if (fs.existsSync(f)) {
-        try {
-          fs.unlinkSync(f);
-          console.log(`Cleaned up temporary file: ${f}`);
-        } catch (e) {
-          console.error(`Failed to delete temporary file ${f}:`, e);
-        }
-      }
-    }
-
     return NextResponse.json({
       success: true,
       mediaType,
@@ -181,6 +159,19 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('API /api/transcribe Error:', error);
     return NextResponse.json({ error: error.message || 'An error occurred during transcription.' }, { status: 500 });
+  } finally {
+    // Unconditionally clean up temporary files to guarantee zero footprint
+    console.log('Unconditionally cleaning up temporary files to maintain zero footprint...');
+    for (const f of tempFilesToDelete) {
+      if (fs.existsSync(f)) {
+        try {
+          fs.unlinkSync(f);
+          console.log(`Cleaned up temporary file: ${f}`);
+        } catch (e) {
+          console.error(`Failed to delete temporary file ${f}:`, e);
+        }
+      }
+    }
   }
 }
 export const maxDuration = 60; // Next.js API Timeout extension to 60s for Vercel if needed

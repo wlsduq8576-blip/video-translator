@@ -1,11 +1,15 @@
 import path from 'path';
 import fs from 'fs';
-import { execFile } from 'child_process';
+import { execFile, execSync } from 'child_process';
 import ffmpegStaticPath from 'ffmpeg-static';
 
 const BIN_DIR = path.join(process.cwd(), '.bin');
-const YT_DLP_PATH = path.join(BIN_DIR, 'yt-dlp.exe');
-const YT_DLP_URL = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe';
+const isWindows = process.platform === 'win32';
+const YT_DLP_FILENAME = isWindows ? 'yt-dlp.exe' : 'yt-dlp';
+const YT_DLP_PATH = path.join(BIN_DIR, YT_DLP_FILENAME);
+const YT_DLP_URL = isWindows
+  ? 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe'
+  : 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp';
 
 function getFfmpegPath(): string | null {
   const localWinPath = path.join(process.cwd(), 'node_modules', 'ffmpeg-static', 'ffmpeg.exe');
@@ -19,10 +23,25 @@ function getFfmpegPath(): string | null {
   if (ffmpegStaticPath && fs.existsSync(ffmpegStaticPath)) {
     return ffmpegStaticPath;
   }
+  // Check if ffmpeg is in system PATH
+  try {
+    execSync('ffmpeg -version', { stdio: 'ignore' });
+    return 'ffmpeg';
+  } catch {
+    // ignore
+  }
   return null;
 }
 
 export async function ensureYtDlp(): Promise<string> {
+  // 1. Check if yt-dlp is available in the system PATH (e.g. Docker environment)
+  try {
+    execSync('yt-dlp --version', { stdio: 'ignore' });
+    return 'yt-dlp';
+  } catch {
+    // ignore
+  }
+
   if (!fs.existsSync(BIN_DIR)) {
     fs.mkdirSync(BIN_DIR, { recursive: true });
   }
@@ -33,12 +52,18 @@ export async function ensureYtDlp(): Promise<string> {
       fs.accessSync(YT_DLP_PATH, fs.constants.X_OK);
       return YT_DLP_PATH;
     } catch {
-      // If not executable, we might need to download or just return path (on Windows it's usually fine)
+      if (!isWindows) {
+        try {
+          fs.chmodSync(YT_DLP_PATH, 0o755);
+        } catch (e) {
+          console.warn('Failed to chmod local yt-dlp:', e);
+        }
+      }
       return YT_DLP_PATH;
     }
   }
 
-  console.log('Downloading yt-dlp.exe from GitHub...');
+  console.log(`Downloading yt-dlp binary for ${process.platform} from GitHub...`);
   const response = await fetch(YT_DLP_URL);
   if (!response.ok) {
     throw new Error(`Failed to download yt-dlp: ${response.statusText}`);
@@ -47,7 +72,15 @@ export async function ensureYtDlp(): Promise<string> {
   const arrayBuffer = await response.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   fs.writeFileSync(YT_DLP_PATH, buffer);
-  console.log('yt-dlp.exe downloaded successfully.');
+  
+  if (!isWindows) {
+    try {
+      fs.chmodSync(YT_DLP_PATH, 0o755);
+    } catch (e) {
+      console.warn('Failed to chmod newly downloaded yt-dlp:', e);
+    }
+  }
+  console.log('yt-dlp downloaded successfully.');
 
   return YT_DLP_PATH;
 }
@@ -75,7 +108,7 @@ export async function downloadAudio(url: string, outputDir: string): Promise<str
     ];
 
     const resolvedFfmpegPath = getFfmpegPath();
-    if (resolvedFfmpegPath) {
+    if (resolvedFfmpegPath && resolvedFfmpegPath !== 'ffmpeg') {
       args.push('--ffmpeg-location', path.dirname(resolvedFfmpegPath));
     }
 

@@ -11,8 +11,6 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'link' | 'upload'>('link');
   const [url, setUrl] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [isVercelEnv, setIsVercelEnv] = useState(false);
-  
   // Loading & process states
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
@@ -31,15 +29,6 @@ export default function Home() {
     if (savedKey) {
       setApiKey(savedKey);
       setShowKeyInput(false);
-    }
-
-    // Check if hosted on Vercel
-    if (typeof window !== 'undefined') {
-      const hostname = window.location.hostname;
-      if (hostname.endsWith('.vercel.app') || hostname.includes('vercel')) {
-        setIsVercelEnv(true);
-        setActiveTab('upload');
-      }
     }
   }, []);
 
@@ -195,17 +184,9 @@ export default function Home() {
           <div className={styles.tabMenu}>
             <button
               className={`${styles.tabBtn} ${activeTab === 'link' ? styles.activeTab : ''}`}
-              onClick={() => {
-                if (isVercelEnv) {
-                  alert('Vercel 환경에서는 유튜브/인스타그램 링크 다운로드가 지원되지 않습니다. 로컬 파일을 업로드해 주세요!');
-                  return;
-                }
-                setActiveTab('link');
-              }}
-              style={isVercelEnv ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+              onClick={() => setActiveTab('link')}
             >
               🔗 외부 영상 링크 (유튜브/인스타)
-              {isVercelEnv && <span className={styles.disabledBadge}>[미지원]</span>}
             </button>
             <button
               className={`${styles.tabBtn} ${activeTab === 'upload' ? styles.activeTab : ''}`}
