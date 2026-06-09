@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Antique | 세월의 가치를 담은 공간</title>
+  <meta name="description" content="엄선된 전통 도자기, 가구, 미술품을 소개하는 프리미엄 골동품 쇼룸 Aura Antique입니다. 전화 및 카카오톡으로 개별 문의 가능합니다.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Noto+Serif+KR:wght@200..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- CSS Link -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loader" class="loader-container">
+    <div class="loader-content">
+      <h1 class="loader-logo">AURA ANTIQUE</h1>
+      <div class="loader-line"></div>
+    </div>
+  </div>
+
+  <!-- Header / Navigation -->
+  <header id="header">
+    <div class="header-container">
+      <a href="#" class="logo">
+        <span class="logo-eng">AURA ANTIQUE</span>
+        <span class="logo-kor">아우라 안티크</span>
+      </a>
+      <nav class="nav-menu">
+        <a href="#hero" class="nav-link">Home</a>
+        <a href="#collection" class="nav-link">Collection</a>
+        <a href="#story" class="nav-link">Our Story</a>
+        <a href="#showroom" class="nav-link">Showroom</a>
+      </nav>
+      <div class="header-cta">
+        <a href="tel:02-123-4567" class="btn btn-outline btn-sm">
+          <i data-lucide="phone"></i>
+          <span>02-123-4567</span>
+        </a>
+      </div>
+      <button class="mobile-menu-btn" aria-label="메뉴 열기">
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Sidebar Menu -->
+  <div class="mobile-sidebar" id="mobileSidebar">
+    <div class="sidebar-header">
+      <span class="logo-eng">AURA ANTIQUE</span>
+      <button class="sidebar-close-btn" aria-label="메뉴 닫기">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="sidebar-links">
+      <a href="#hero" class="sidebar-link">Home</a>
+      <a href="#collection" class="sidebar-link">Collection</a>
+      <a href="#story" class="sidebar-link">Our Story</a>
+      <a href="#showroom" class="sidebar-link">Showroom</a>
+      <a href="tel:02-123-4567" class="sidebar-cta">
+        <i data-lucide="phone"></i>
+        <span>전화 문의 (02-123-4567)</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <section id="hero" class="hero-section">
+    <div class="hero-bg-overlay"></div>
+    <div class="hero-content">
+      <span class="hero-subtitle">CURATED PIECES OF HISTORY</span>
+      <h2 class="hero-title">시간이 흐를수록<br>깊어지는 아름다움</h2>
+      <p class="hero-desc">엄격한 안목으로 감정하고 선별한 고유의 역사와 스토리를 지닌 고품격 예술품과 가구를 소개합니다.</p>
+      <div class="hero-actions">
+        <a href="#collection" class="btn btn-primary">컬렉션 보기</a>
+        <a href="#showroom" class="btn btn-secondary">쇼룸 방문 안내</a>
+      </div>
+    </div>
+    <div class="hero-scroll-indicator">
+      <span>Scroll</span>
+      <div class="indicator-line"></div>
+    </div>
+  </section>
+
+  <!-- Collection Section -->
+  <section id="collection" class="collection-section">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-subtitle">OUR COLLECTION</span>
+        <h3 class="section-title">엄선된 마스터피스</h3>
+        <p class="section-desc">조선 백자에서부도 유럽 빈티지 오너먼트까지, 시공간을 초월한 명작들을 감상하세요.</p>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-container">
+        <div class="filter-group category-filters">
+          <button class="filter-btn active" data-filter="category" data-value="all">전체</button>
+          <button class="filter-btn" data-filter="category" data-value="ceramics">도자기/식기</button>
+          <button class="filter-btn" data-filter="category" data-value="furniture">가구</button>
+          <button class="filter-btn" data-filter="category" data-value="artworks">미술품</button>
+          <button class="filter-btn" data-filter="category" data-value="collectibles">수집품</button>
+        </div>
+        
+        <div class="filter-group status-filters">
+          <button class="status-btn active" data-filter="status" data-value="all">전체 상태</button>
+          <button class="status-btn" data-filter="status" data-value="available">판매 중</button>
+          <button class="status-btn" data-filter="status" data-value="reserved">예약 중</button>
+          <button class="status-btn" data-filter="status" data-value="sold">판매 완료</button>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="product-grid" id="productGrid">
+        <!-- Products will be dynamically loaded via JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Story Section -->
+  <section id="story" class="story-section">
+    <div class="story-container">
+      <div class="story-image-side">
+        <div class="story-img-wrapper">
+          <!-- We will show an elegant overlay layout here -->
+          <div class="story-card-overlay">
+            <h4>SINCE 1995</h4>
+            <p>30년간 지켜온 안목과 정직함</p>
+          </div>
+        </div>
+      </div>
+      <div class="story-text-side">
+        <span class="section-subtitle">OUR STORY</span>
+        <h3 class="section-title">박물관을 벗어난<br>내 공간의 역사</h3>
+        <p class="story-paragraph">골동품은 단순히 오래된 물건이 아닙니다. 그것은 시대를 살아낸 장인의 혼과 역사의 숨결이 서려 있는 살아있는 유산입니다.</p>
+        <p class="story-paragraph">아우라 안티크는 단순한 판매를 넘어, 각 예술품이 지닌 고유의 서사를 복원하고 다음 세대로 연결하는 가교 역할을 하고자 합니다. 모든 소장품은 철저한 시대 고증과 진품 감정을 거쳐 보증서와 함께 전달됩니다.</p>
+        
+        <div class="story-features">
+          <div class="feature-item">
+            <div class="feature-icon"><i data-lucide="shield-check"></i></div>
+            <div class="feature-info">
+              <h5>100% 진품 보증</h5>
+              <p>자체 감정 필증 및 상세 보증서 발행</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i data-lucide="truck"></i></div>
+            <div class="feature-info">
+              <h5>특수 안전 배송</h5>
+              <p>파손 방지를 위한 맞춤 특수 진공포장 배송</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Showroom & Contact Section -->
+  <section id="showroom" class="showroom-section">
+    <div class="section-container">
+      <div class="showroom-layout">
+        <div class="showroom-info-side">
+          <span class="section-subtitle">VISIT US</span>
+          <h3 class="section-title">오프라인 쇼룸 안내</h3>
+          <p class="showroom-desc">쇼룸에 예약 방문하시면 사진으로 다 담지 못한 골동품의 깊이와 질감을 직접 눈으로 확인하실 수 있습니다.</p>
+          
+          <div class="contact-details">
+            <div class="contact-item">
+              <i data-lucide="map-pin"></i>
+              <div>
+                <h6>주소</h6>
+                <p>서울특별시 종로구 인사동길 44 (관훈동)</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <i data-lucide="clock"></i>
+              <div>
+                <h6>운영 시간</h6>
+                <p>화요일 - 일요일 | 11:00 - 19:00 (월요일 휴무)</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <i data-lucide="info"></i>
+              <div>
+                <h6>주차 안내</h6>
+                <p>인근 서인사마당 공영주차장 이용 가능 (도보 2분)</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="showroom-actions">
+            <a href="tel:02-123-4567" class="btn btn-primary">
+              <i data-lucide="phone"></i>
+              <span>전화 예약하기</span>
+            </a>
+            <a href="https://pf.kakao.com/" target="_blank" rel="noopener noreferrer" class="btn btn-kakao">
+              <i data-lucide="message-square"></i>
+              <span>카카오톡 문의</span>
+            </a>
+          </div>
+        </div>
+        
+        <div class="showroom-map-side">
+          <!-- Styled Map Placeholder -->
+          <div class="map-placeholder">
+            <div class="map-overlay">
+              <i data-lucide="map"></i>
+              <span>지도 로딩 중 (인사동 쇼룸)</span>
+              <a href="https://map.kakao.com/?q=서울특별시 종로구 관훈동 인사동길 44" target="_blank" class="btn btn-outline btn-sm">카카오맵에서 보기</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product Detail Modal -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal-container">
+      <button class="modal-close-btn" aria-label="닫기">
+        <i data-lucide="x"></i>
+      </button>
+      
+      <div class="modal-content-layout">
+        <!-- Image Gallery Side -->
+        <div class="modal-image-side">
+          <div class="main-image-container">
+            <img id="modalMainImg" src="" alt="제품 상세 이미지">
+          </div>
+          <div class="thumbnail-list" id="modalThumbnails">
+            <!-- Thumbnails will be injected dynamically -->
+          </div>
+        </div>
+        
+        <!-- Info Side -->
+        <div class="modal-info-side">
+          <div class="modal-header-info">
+            <span class="product-badge" id="modalBadge">판매 중</span>
+            <span class="product-sku" id="modalSku">SKU: ART-001</span>
+          </div>
+          <h4 class="modal-product-title" id="modalTitle">조선 백자 달항아리</h4>
+          
+          <div class="modal-product-specs">
+            <div class="spec-row">
+              <span class="spec-label">시대/연대</span>
+              <span class="spec-val" id="modalEra">18세기 조선 시대</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">크기/규격</span>
+              <span class="spec-val" id="modalSize">높이 42.5cm, 몸통 지름 41cm</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">상태 등급</span>
+              <span class="spec-val" id="modalCondition">A+ (보존 상태 최상, 미세 실금 없음)</span>
+            </div>
+          </div>
+          
+          <div class="modal-product-description">
+            <h5>작품 스토리 및 설명</h5>
+            <p id="modalDesc">조선 후기의 대표적인 백자 달항아리입니다. 넉넉하고 둥근 형태와 백색의 고유한 깊이가 어우러져 한국적인 절제미를 극대화해 보여주는 작품입니다. 소장 가치가 대단히 높습니다.</p>
+          </div>
+
+          <div class="modal-sku-copy-box">
+            <span class="sku-copy-text">작품 고유번호: <strong id="modalSkuCopyVal">ART-001</strong></span>
+            <button class="btn-copy-sku" id="btnCopySku" title="고유번호 복사">
+              <i data-lucide="copy"></i>
+              <span>번호 복사</span>
+            </button>
+          </div>
+
+          <div class="modal-price-inquiry">
+            <div class="inquiry-message">
+              <p>골동품 특성상 최종 가격 및 구매는 전화 상담을 통해 진행됩니다. (작품번호를 말씀해주시면 빠른 상담이 가능합니다.)</p>
+            </div>
+            <div class="modal-cta-buttons">
+              <a href="tel:02-123-4567" class="btn btn-primary btn-lg" id="modalTelBtn">
+                <i data-lucide="phone-call"></i>
+                <span>전화로 구매 문의</span>
+              </a>
+              <a href="https://pf.kakao.com/" target="_blank" rel="noopener noreferrer" class="btn btn-kakao btn-lg">
+                <i data-lucide="message-square"></i>
+                <span>카카오톡 1:1 채팅</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification (for SKU copy) -->
+  <div class="toast-notification" id="toast">
+    <i data-lucide="check-circle-2"></i>
+    <span>작품 번호가 복사되었습니다.</span>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-brand">
+        <span class="brand-name">AURA ANTIQUE</span>
+        <p class="brand-tagline">세월의 흐름을 예술로 승화시키는 프리미엄 골동품 쇼룸</p>
+      </div>
+      
+      <div class="footer-links">
+        <div class="link-group">
+          <h6>Contact</h6>
+          <p>대표 전화: 02-123-4567</p>
+          <p>이메일: contact@auraantique.com</p>
+        </div>
+        <div class="link-group">
+          <h6>Showroom</h6>
+          <p>서울특별시 종로구 인사동길 44</p>
+          <p>영업시간: 11:00 - 19:00 (월요일 휴무)</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; 2026 Aura Antique. All Rights Reserved. | 대표자: 홍길동 | 사업자등록번호: 120-00-00000</p>
+    </div>
+  </footer>
+
+  <!-- JS Scripts -->
+  <script src="app.js"></script>
+  <script>
+    // Initialize Lucide Icons after DOM content is loaded
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

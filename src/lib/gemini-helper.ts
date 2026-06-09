@@ -48,67 +48,84 @@ export async function transcribeAndTranslate(
 
   console.log('File is ACTIVE. Generating transcription & translation...');
 
+  const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+  let lastError: any = null;
+  let text = '';
+
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-    });
+    for (const modelName of modelsToTry) {
+      try {
+        console.log(`Attempting generation with model: ${modelName}`);
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+        });
 
-    const prompt = `
-      Analyze this audio file. Transcribe the dialogue with precise timestamps, and translate the dialogue into natural, fluent Korean. 
-      Create a timeline script of the dialogue.
-      Provide the result in the exact JSON format specified by the response schema.
-    `;
+        const prompt = `
+          Analyze this audio file. Transcribe the dialogue with precise timestamps, and translate the dialogue into natural, fluent Korean. 
+          Create a timeline script of the dialogue.
+          Provide the result in the exact JSON format specified by the response schema.
+        `;
 
-    const response = await model.generateContent({
-      contents: [
-        {
-          role: 'user',
-          parts: [
+        const response = await model.generateContent({
+          contents: [
             {
-              fileData: {
-                mimeType: fileInfo.mimeType,
-                fileUri: fileInfo.uri,
-              },
-            },
-            {
-              text: prompt,
+              role: 'user',
+              parts: [
+                {
+                  fileData: {
+                    mimeType: fileInfo.mimeType,
+                    fileUri: fileInfo.uri,
+                  },
+                },
+                {
+                  text: prompt,
+                },
+              ],
             },
           ],
-        },
-      ],
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'ARRAY' as any,
-          description: 'A list of dialog segments with timestamps and translations',
-          items: {
-            type: 'OBJECT' as any,
-            properties: {
-              start: {
-                type: 'NUMBER' as any,
-                description: 'The start time of the segment in seconds (e.g. 1.25)',
-              },
-              end: {
-                type: 'NUMBER' as any,
-                description: 'The end time of the segment in seconds (e.g. 5.10)',
-              },
-              originalText: {
-                type: 'STRING' as any,
-                description: 'The original transcribed text in the language spoken in the video',
-              },
-              translatedText: {
-                type: 'STRING' as any,
-                description: 'The translated Korean text of the segment, naturally phrased.',
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'ARRAY' as any,
+              description: 'A list of dialog segments with timestamps and translations',
+              items: {
+                type: 'OBJECT' as any,
+                properties: {
+                  start: {
+                    type: 'NUMBER' as any,
+                    description: 'The start time of the segment in seconds (e.g. 1.25)',
+                  },
+                  end: {
+                    type: 'NUMBER' as any,
+                    description: 'The end time of the segment in seconds (e.g. 5.10)',
+                  },
+                  originalText: {
+                    type: 'STRING' as any,
+                    description: 'The original transcribed text in the language spoken in the video',
+                  },
+                  translatedText: {
+                    type: 'STRING' as any,
+                    description: 'The translated Korean text of the segment, naturally phrased.',
+                  },
+                },
+                required: ['start', 'end', 'originalText', 'translatedText'],
               },
             },
-            required: ['start', 'end', 'originalText', 'translatedText'],
           },
-        },
-      },
-    });
+        });
 
-    const text = response.response.text();
-    console.log('Gemini raw response text length:', text.length);
+        text = response.response.text();
+        console.log(`Gemini response successful with model: ${modelName}. Raw response length: ${text.length}`);
+        break; // Success, break loop
+      } catch (e: any) {
+        console.warn(`Model ${modelName} failed:`, e.message || e);
+        lastError = e;
+      }
+    }
+
+    if (!text) {
+      throw new Error(`Google Generative AI failed on all attempted models. Last error: ${lastError?.message || lastError}`);
+    }
 
     const segments: ScriptSegment[] = JSON.parse(text);
     return segments;
