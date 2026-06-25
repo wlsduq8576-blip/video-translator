@@ -7,6 +7,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Force rebuild cache for yt-dlp update (2026-06-25)
+ENV YT_DLP_BUILD_DATE=2026-06-25_2132
+
 # Install yt-dlp to system path
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
     && chmod a+rx /usr/local/bin/yt-dlp
