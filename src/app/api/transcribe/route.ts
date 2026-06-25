@@ -94,17 +94,38 @@ export async function POST(req: NextRequest) {
           selectedVideoFile = videoFile;
         }
 
-        // Validate file size to detect block page or 0-byte failures (under 50KB is invalid)
+        // Validate file content: check if it's HTML (block page) or empty/corrupt file
         if (fs.existsSync(selectedVideoFile)) {
           const fileStat = fs.statSync(selectedVideoFile);
-          if (fileStat.size < 50 * 1024) {
-            throw new Error('인스타그램에서 다운로드를 차단했습니다. (가상 서버 IP가 차단되었거나 비공개 계정 영상입니다.) 다른 릴스 영상으로 시도해 주세요.');
+          if (fileStat.size < 1024) {
+            throw new Error('인스타그램에서 영상 다운로드를 차단했습니다. (가상 서버 IP 차단 또는 유효하지 않은 영상). 다른 릴스로 시도해 주세요.');
+          }
+          
+          // Read first 1KB to check if it's actually HTML text instead of MP4 binary
+          const fd = fs.openSync(selectedVideoFile, 'r');
+          const buffer = Buffer.alloc(1024);
+          const bytesRead = fs.readSync(fd, buffer, 0, 1024, 0);
+          fs.closeSync(fd);
+
+          const fileContentHead = buffer.toString('utf8', 0, bytesRead).toLowerCase();
+          if (
+            fileContentHead.includes('<!doctype html') || 
+            fileContentHead.includes('<html') || 
+            fileContentHead.includes('<script') ||
+            fileContentHead.includes('{"')
+          ) {
+            throw new Error('인스타그램에서 다운로드를 차단했습니다. (가상 서버 IP 차단 또는 로그인 요구 영상). 다른 릴스 영상으로 시도해 주세요.');
           }
         } else {
           throw new Error('인스타그램 영상 파일이 생성되지 않았습니다.');
         }
 
-        audioPath = await extractAudio(selectedVideoFile, tempDir);
+        try {
+          audioPath = await extractAudio(selectedVideoFile, tempDir);
+        } catch (e: any) {
+          console.error('FFmpeg extraction failed:', e);
+          throw new Error('영상 파일 오디오 변환에 실패했습니다. 차단된 웹페이지 파일이거나 지원하지 않는 동영상 형식입니다. 다른 링크로 시도해 주세요.');
+        }
         tempFilesToDelete.push(audioPath);
         const videoFileName = path.basename(selectedVideoFile);
         videoUrl = `/api/video?id=${encodeURIComponent(videoFileName)}`;
