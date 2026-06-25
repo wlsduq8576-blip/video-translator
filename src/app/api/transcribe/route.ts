@@ -60,6 +60,8 @@ export async function POST(req: NextRequest) {
             '-f', 'mp4/best',
             '-o', videoFile,
             '--no-playlist',
+            '--no-check-certificate',
+            '--referer', 'https://www.instagram.com/',
             '--user-agent',
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           ];
@@ -73,6 +75,8 @@ export async function POST(req: NextRequest) {
           });
         });
 
+        let selectedVideoFile = '';
+
         if (!fs.existsSync(videoFile)) {
           // Fallback: Check if there's any file matching ig_*.mp4 in the folder
           const files = fs.readdirSync(tempDir)
@@ -81,20 +85,29 @@ export async function POST(req: NextRequest) {
           
           if (files.length > 0) {
             files.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
-            audioPath = await extractAudio(files[0], tempDir);
-            tempFilesToDelete.push(files[0]); // Ensure the fallback video file is cleaned up too
-            const videoFileName = path.basename(files[0]);
-            videoUrl = `/api/video?id=${encodeURIComponent(videoFileName)}`;
+            selectedVideoFile = files[0];
+            tempFilesToDelete.push(selectedVideoFile); // Ensure fallback is cleaned up too
           } else {
-            throw new Error('Instagram video file was not found in temp directory.');
+            throw new Error('인스타그램 영상 다운로드에 실패했습니다. (서버 IP가 차단되었거나 유효하지 않은 링크입니다.)');
           }
         } else {
-          audioPath = await extractAudio(videoFile, tempDir);
-          const videoFileName = path.basename(videoFile);
-          videoUrl = `/api/video?id=${encodeURIComponent(videoFileName)}`;
+          selectedVideoFile = videoFile;
         }
-        
+
+        // Validate file size to detect block page or 0-byte failures (under 50KB is invalid)
+        if (fs.existsSync(selectedVideoFile)) {
+          const fileStat = fs.statSync(selectedVideoFile);
+          if (fileStat.size < 50 * 1024) {
+            throw new Error('인스타그램에서 다운로드를 차단했습니다. (가상 서버 IP가 차단되었거나 비공개 계정 영상입니다.) 다른 릴스 영상으로 시도해 주세요.');
+          }
+        } else {
+          throw new Error('인스타그램 영상 파일이 생성되지 않았습니다.');
+        }
+
+        audioPath = await extractAudio(selectedVideoFile, tempDir);
         tempFilesToDelete.push(audioPath);
+        const videoFileName = path.basename(selectedVideoFile);
+        videoUrl = `/api/video?id=${encodeURIComponent(videoFileName)}`;
       } else {
         return NextResponse.json({ error: 'Unsupported video link. Please provide a YouTube or Instagram link.' }, { status: 400 });
       }
