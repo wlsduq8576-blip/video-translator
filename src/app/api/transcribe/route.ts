@@ -158,25 +158,30 @@ export async function POST(req: NextRequest) {
     // Determine MIME type
     let mimeType = 'audio/mp3';
     if (file) {
-      mimeType = file.type;
-      if (!mimeType || mimeType === 'application/octet-stream') {
-        const ext = path.extname(file.name).toLowerCase();
-        const mimeMap: Record<string, string> = {
-          '.mp3': 'audio/mp3',
-          '.wav': 'audio/wav',
-          '.ogg': 'audio/ogg',
-          '.m4a': 'audio/m4a',
-          '.aac': 'audio/aac',
-          '.flac': 'audio/flac',
-          '.mp4': 'video/mp4',
-          '.webm': 'video/webm',
-          '.mov': 'video/mov',
-          '.mkv': 'video/mkv',
-          '.avi': 'video/avi',
-          '.mpeg': 'video/mpeg',
-          '.mpg': 'video/mpeg',
-        };
-        mimeType = mimeMap[ext] || 'audio/mp3';
+      // If FFmpeg successfully converted the file to mp3, the MIME type must be audio/mp3
+      if (audioPath.endsWith('.mp3')) {
+        mimeType = 'audio/mp3';
+      } else {
+        mimeType = file.type;
+        if (!mimeType || mimeType === 'application/octet-stream') {
+          const ext = path.extname(file.name).toLowerCase();
+          const mimeMap: Record<string, string> = {
+            '.mp3': 'audio/mp3',
+            '.wav': 'audio/wav',
+            '.ogg': 'audio/ogg',
+            '.m4a': 'audio/m4a',
+            '.aac': 'audio/aac',
+            '.flac': 'audio/flac',
+            '.mp4': 'video/mp4',
+            '.webm': 'video/webm',
+            '.mov': 'video/mov',
+            '.mkv': 'video/mkv',
+            '.avi': 'video/avi',
+            '.mpeg': 'video/mpeg',
+            '.mpg': 'video/mpeg',
+          };
+          mimeType = mimeMap[ext] || 'audio/mp3';
+        }
       }
     }
 
